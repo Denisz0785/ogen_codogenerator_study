@@ -1,0 +1,86 @@
+openapi: "3.0.2"
+info:
+  title: Expense management
+  version: "1.0"
+servers:
+  - url: https://api.server.test/v1
+
+components:
+  schemas:
+    AllExpenses:
+      properties:
+       data:
+          items:
+            $ref: '#/components/schemas/Expense'
+          type: array
+      type: object
+    Expense:
+      properties:
+        id:
+          type: integer
+        expense_type_id:
+          type: string
+        reated_at:
+          type: string
+          format: date-time
+          x-ogen-format: 2006-01-02T15:04:05
+        spent_money:
+          type: number
+          format: double
+      required:
+      - id
+      - expense_type_id
+      - spent_money
+      - time
+      type: object
+    ErrorResponse:
+      properties:
+        message:
+          type: string
+      type: object
+
+paths:
+  '/api/expenses/{userId}':
+    get:
+      tags:
+      - expenses
+      summary: get all expenses of client by user Id
+      description: Returns all expenses
+      operationId: GetAllExpenses
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllExpenses'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+       
+      
+      
+
