@@ -1,13 +1,13 @@
 package storage
 
 import (
+	ogenspec "codogenerator/spec"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"time"
-
-	ogenspec "codogenerator/spec"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -23,6 +23,7 @@ type Repository interface {
 	// AddFileExpense(ctx context.Context, filepath string, expId int, typeFile string) error
 	// CreateUserExpense(ctx context.Context, expenseData *dto.CreateExpense, userId int) (int, error)
 	GetAllExpenses(ctx context.Context, userId int) ([]ogenspec.Expense, error)
+	DeleteExpense(ctx context.Context, userID, expenseID int) error
 	// DeleteExpense(ctx context.Context, expenseId, userId int) (int, error)
 	// DeleteFile(ctx context.Context, pathFile string, expenseId int) error
 	// GetExpense(ctx context.Context, userID, expenseID int) (*dto.Expense, error)
@@ -65,7 +66,7 @@ func ConnectToDB(ctx context.Context, myurl string) (*pgx.Conn, error) {
 func (r *ExpenseRepo) GetAllExpenses(ctx context.Context, userId int) ([]ogenspec.Expense, error) {
 	// SQL query to select expenses from the database.
 	query := `
-		SELECT
+		 SELECT
 			e.id,
 			e.expense_type_id,
 			e.reated_at,
@@ -95,10 +96,28 @@ func (r *ExpenseRepo) GetAllExpenses(ctx context.Context, userId int) ([]ogenspe
 
 	// Convert the Expense structs to ogenspec.Expense structs.
 	ogenTypeExpense := make([]ogenspec.Expense, len(expenses))
-	
+
 	for i, v := range expenses {
 		ogenTypeExpense[i] = convertExpenseToOgenspecExpense(v)
 	}
 
 	return ogenTypeExpense, nil
+}
+
+func (r *ExpenseRepo) DeleteExpense(ctx context.Context, userID, expenseID int) error {
+	var idDeleteExpense int
+	query := `DELETE FROM expense WHERE id IN (select e.id from users u join  expense_type et
+		ON u.id=et.users_id join expense e on e.expense_type_id=et.id where u.id=$1
+		and e.id=$2) returning id`
+	//_, err := r.conn.Exec(ctx, query, userId, expenseId)
+	err := r.conn.QueryRow(ctx, query, userID, expenseID).Scan(&idDeleteExpense)
+	if err != nil {
+		if idDeleteExpense == 0 {
+			log.Println("id expense does not exist")
+			return errors.New("expense does not exist")
+		}
+		log.Println(err)
+		return err
+	}
+	return nil
 }

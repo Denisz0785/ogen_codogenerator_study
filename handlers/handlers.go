@@ -18,7 +18,7 @@ func NewHandler(r storage.Repository) *Handler {
 
 func (h *Handler) GetAllExpenses(ctx context.Context, params ogenspec.GetAllExpensesParams) (ogenspec.GetAllExpensesRes, error) {
 
-	allExpenses, err := h.repo.GetAllExpenses(ctx, int(params.UserId))
+	allExpenses, err := h.repo.GetAllExpenses(ctx, params.UserId)
 	if err != nil {
 		log.Printf("error get expenses:%s", err.Error())
 		h.NewError(ctx, err)
@@ -27,8 +27,25 @@ func (h *Handler) GetAllExpenses(ctx context.Context, params ogenspec.GetAllExpe
 	return &ogenspec.AllExpenses{Data: allExpenses}, nil
 }
 
+func (h *Handler) DeleteExpense(ctx context.Context, params ogenspec.DeleteExpenseParams) error {
+
+	err := h.repo.DeleteExpense(ctx, params.UserId, params.ExpenseID)
+	if err != nil {
+		log.Printf("error delete expense:%s", err.Error())
+		h.NewError(ctx, err)
+		return err
+	}
+	return nil
+}
+
 func (h *Handler) NewError(ctx context.Context, err error) *ogenspec.ErrorResponseStatusCode {
-	// TODO
-	// errorResponse := ogenspec.ErrorResponse{Message: err.Error()}
-	return &ogenspec.ErrorResponseStatusCode{}
+	// TODO statusCode
+	message := ogenspec.OptString{}
+	message.SetTo(err.Error())
+	errorResponse := ogenspec.ErrorResponse{}
+	errorResponse.SetMessage(message)
+	errorResponseStatusCode := ogenspec.ErrorResponseStatusCode{}
+	errorResponseStatusCode.SetResponse(errorResponse)
+
+	return &errorResponseStatusCode
 }

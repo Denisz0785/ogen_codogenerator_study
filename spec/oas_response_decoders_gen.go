@@ -14,6 +14,15 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
+func decodeDeleteExpenseResponse(resp *http.Response) (res *DeleteExpenseOK, _ error) {
+	switch resp.StatusCode {
+	case 200:
+		// Code 200.
+		return &DeleteExpenseOK{}, nil
+	}
+	return res, validate.UnexpectedStatusCode(resp.StatusCode)
+}
+
 func decodeGetAllExpensesResponse(resp *http.Response) (res GetAllExpensesRes, _ error) {
 	switch resp.StatusCode {
 	case 200:
@@ -131,8 +140,8 @@ func decodeGetAllExpensesResponse(resp *http.Response) (res GetAllExpensesRes, _
 			return res, validate.InvalidContentType(ct)
 		}
 	}
-	// Convenient error response.
-	defRes, err := func() (res *ErrorResponseStatusCode, err error) {
+	// Default response.
+	res, err := func() (res GetAllExpensesRes, err error) {
 		ct, _, err := mime.ParseMediaType(resp.Header.Get("Content-Type"))
 		if err != nil {
 			return res, errors.Wrap(err, "parse media type")
@@ -173,5 +182,5 @@ func decodeGetAllExpensesResponse(resp *http.Response) (res GetAllExpensesRes, _
 	if err != nil {
 		return res, errors.Wrapf(err, "default (code %d)", resp.StatusCode)
 	}
-	return res, errors.Wrap(defRes, "error")
+	return res, nil
 }

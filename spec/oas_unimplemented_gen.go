@@ -13,6 +13,15 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// DeleteExpense implements DeleteExpense operation.
+//
+// Deletes an expense.
+//
+// DELETE /api/expenses/{userId}
+func (UnimplementedHandler) DeleteExpense(ctx context.Context, params DeleteExpenseParams) error {
+	return ht.ErrNotImplemented
+}
+
 // GetAllExpenses implements GetAllExpenses operation.
 //
 // Returns all expenses.
@@ -20,12 +29,4 @@ var _ Handler = UnimplementedHandler{}
 // GET /api/expenses/{userId}
 func (UnimplementedHandler) GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (r GetAllExpensesRes, _ error) {
 	return r, ht.ErrNotImplemented
-}
-
-// NewError creates *ErrorResponseStatusCode from error returned by handler.
-//
-// Used for common default response.
-func (UnimplementedHandler) NewError(ctx context.Context, err error) (r *ErrorResponseStatusCode) {
-	r = new(ErrorResponseStatusCode)
-	return r
 }

@@ -8,16 +8,18 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// DeleteExpense implements DeleteExpense operation.
+	//
+	// Deletes an expense.
+	//
+	// DELETE /api/expenses/{userId}
+	DeleteExpense(ctx context.Context, params DeleteExpenseParams) error
 	// GetAllExpenses implements GetAllExpenses operation.
 	//
 	// Returns all expenses.
 	//
 	// GET /api/expenses/{userId}
 	GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (GetAllExpensesRes, error)
-	// NewError creates *ErrorResponseStatusCode from error returned by handler.
-	//
-	// Used for common default response.
-	NewError(ctx context.Context, err error) *ErrorResponseStatusCode
 }
 
 // Server implements http server based on OpenAPI v3 specification and

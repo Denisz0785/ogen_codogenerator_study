@@ -3,13 +3,8 @@
 package api
 
 import (
-	"fmt"
 	"time"
 )
-
-func (s *ErrorResponseStatusCode) Error() string {
-	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
-}
 
 // Ref: #/components/schemas/AllExpenses
 type AllExpenses struct {
@@ -27,6 +22,9 @@ func (s *AllExpenses) SetData(val []Expense) {
 }
 
 func (*AllExpenses) getAllExpensesRes() {}
+
+// DeleteExpenseOK is response for DeleteExpense operation.
+type DeleteExpenseOK struct{}
 
 // Ref: #/components/schemas/ErrorResponse
 type ErrorResponse struct {
@@ -68,6 +66,8 @@ func (s *ErrorResponseStatusCode) SetStatusCode(val int) {
 func (s *ErrorResponseStatusCode) SetResponse(val ErrorResponse) {
 	s.Response = val
 }
+
+func (*ErrorResponseStatusCode) getAllExpensesRes() {}
 
 // Ref: #/components/schemas/Expense
 type Expense struct {
