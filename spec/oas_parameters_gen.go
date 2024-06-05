@@ -15,10 +15,122 @@ import (
 	"github.com/ogen-go/ogen/validate"
 )
 
+// DeleteExpenseParams is parameters of DeleteExpense operation.
+type DeleteExpenseParams struct {
+	// ID of user.
+	UserId int
+	// Expense id to delete.
+	ExpenseID int
+}
+
+func unpackDeleteExpenseParams(packed middleware.Parameters) (params DeleteExpenseParams) {
+	{
+		key := middleware.ParameterKey{
+			Name: "userId",
+			In:   "path",
+		}
+		params.UserId = packed[key].(int)
+	}
+	{
+		key := middleware.ParameterKey{
+			Name: "expenseID",
+			In:   "query",
+		}
+		params.ExpenseID = packed[key].(int)
+	}
+	return params
+}
+
+func decodeDeleteExpenseParams(args [1]string, argsEscaped bool, r *http.Request) (params DeleteExpenseParams, _ error) {
+	q := uri.NewQueryDecoder(r.URL.Query())
+	// Decode path: userId.
+	if err := func() error {
+		param := args[0]
+		if argsEscaped {
+			unescaped, err := url.PathUnescape(args[0])
+			if err != nil {
+				return errors.Wrap(err, "unescape path")
+			}
+			param = unescaped
+		}
+		if len(param) > 0 {
+			d := uri.NewPathDecoder(uri.PathDecoderConfig{
+				Param:   "userId",
+				Value:   param,
+				Style:   uri.PathStyleSimple,
+				Explode: false,
+			})
+
+			if err := func() error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt(val)
+				if err != nil {
+					return err
+				}
+
+				params.UserId = c
+				return nil
+			}(); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "userId",
+			In:   "path",
+			Err:  err,
+		}
+	}
+	// Decode query: expenseID.
+	if err := func() error {
+		cfg := uri.QueryParameterDecodingConfig{
+			Name:    "expenseID",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.HasParam(cfg); err == nil {
+			if err := q.DecodeParam(cfg, func(d uri.Decoder) error {
+				val, err := d.DecodeValue()
+				if err != nil {
+					return err
+				}
+
+				c, err := conv.ToInt(val)
+				if err != nil {
+					return err
+				}
+
+				params.ExpenseID = c
+				return nil
+			}); err != nil {
+				return err
+			}
+		} else {
+			return validate.ErrFieldRequired
+		}
+		return nil
+	}(); err != nil {
+		return params, &ogenerrors.DecodeParamError{
+			Name: "expenseID",
+			In:   "query",
+			Err:  err,
+		}
+	}
+	return params, nil
+}
+
 // GetAllExpensesParams is parameters of GetAllExpenses operation.
 type GetAllExpensesParams struct {
 	// ID of user.
-	UserId int64
+	UserId int
 }
 
 func unpackGetAllExpensesParams(packed middleware.Parameters) (params GetAllExpensesParams) {
@@ -27,7 +139,7 @@ func unpackGetAllExpensesParams(packed middleware.Parameters) (params GetAllExpe
 			Name: "userId",
 			In:   "path",
 		}
-		params.UserId = packed[key].(int64)
+		params.UserId = packed[key].(int)
 	}
 	return params
 }
@@ -57,7 +169,7 @@ func decodeGetAllExpensesParams(args [1]string, argsEscaped bool, r *http.Reques
 					return err
 				}
 
-				c, err := conv.ToInt64(val)
+				c, err := conv.ToInt(val)
 				if err != nil {
 					return err
 				}

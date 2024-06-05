@@ -55,3 +55,19 @@
 2024/06/02 10:14:57 storage.go:82: storage 151
 2024/06/02 10:42:48 storage.go:54: postgres://expense_user:zorro@localhost:5432/expenses
 2024/06/02 10:42:52 storage.go:82: storage 151
+2024/06/02 11:12:35 storage.go:54: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/02 11:13:09 storage.go:82: storage 999
+2024/06/02 11:13:12 storage.go:82: storage 999
+2024/06/02 11:13:21 storage.go:82: storage 1999
+2024/06/02 11:14:50 storage.go:54: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/02 11:14:54 storage.go:82: storage 1999
+2024/06/02 11:14:54 storage.go:85: ERROR: syntax error at or near "//" (SQLSTATE 42601)
+2024/06/02 11:14:54 handlers.go:23: error get expenses:ERROR: syntax error at or near "//" (SQLSTATE 42601)
+2024/06/02 11:15:20 storage.go:54: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/02 11:15:28 storage.go:82: storage 151
+2024/06/02 11:58:46 storage.go:54: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/02 11:58:53 storage.go:82: storage 153
+2024/06/02 12:04:46 storage.go:55: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/02 12:07:02 storage.go:83: storage 153
+2024/06/02 12:09:46 storage.go:83: storage 153
+2024/06/02 12:09:50 storage.go:83: storage 151
