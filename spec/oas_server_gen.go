@@ -12,14 +12,14 @@ type Handler interface {
 	//
 	// Deletes an expense.
 	//
-	// DELETE /api/expenses/{userId}
+	// DELETE /api/expenses
 	DeleteExpense(ctx context.Context, params DeleteExpenseParams) error
 	// GetAllExpenses implements GetAllExpenses operation.
 	//
 	// Returns all expenses.
 	//
-	// GET /api/expenses/{userId}
-	GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (GetAllExpensesRes, error)
+	// GET /api/expenses
+	GetAllExpenses(ctx context.Context) (GetAllExpensesRes, error)
 	// SignIn implements signIn operation.
 	//
 	// Validate user.

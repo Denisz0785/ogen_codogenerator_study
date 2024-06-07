@@ -40,7 +40,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.notFound(w, r)
 		return
 	}
-	args := [1]string{}
 
 	// Static code generated router with unwrapped path search.
 	switch {
@@ -61,30 +60,21 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			switch elem[0] {
-			case 'p': // Prefix: "pi/expenses/"
+			case 'p': // Prefix: "pi/expenses"
 				origElem := elem
-				if l := len("pi/expenses/"); len(elem) >= l && elem[0:l] == "pi/expenses/" {
+				if l := len("pi/expenses"); len(elem) >= l && elem[0:l] == "pi/expenses" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
-				// Param: "userId"
-				// Leaf parameter
-				args[0] = elem
-				elem = ""
-
 				if len(elem) == 0 {
 					// Leaf node.
 					switch r.Method {
 					case "DELETE":
-						s.handleDeleteExpenseRequest([1]string{
-							args[0],
-						}, elemIsEscaped, w, r)
+						s.handleDeleteExpenseRequest([0]string{}, elemIsEscaped, w, r)
 					case "GET":
-						s.handleGetAllExpensesRequest([1]string{
-							args[0],
-						}, elemIsEscaped, w, r)
+						s.handleGetAllExpensesRequest([0]string{}, elemIsEscaped, w, r)
 					default:
 						s.notAllowed(w, r, "DELETE,GET")
 					}
@@ -165,7 +155,7 @@ type Route struct {
 	operationID string
 	pathPattern string
 	count       int
-	args        [1]string
+	args        [0]string
 }
 
 // Name returns ogen operation name.
@@ -245,18 +235,13 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				break
 			}
 			switch elem[0] {
-			case 'p': // Prefix: "pi/expenses/"
+			case 'p': // Prefix: "pi/expenses"
 				origElem := elem
-				if l := len("pi/expenses/"); len(elem) >= l && elem[0:l] == "pi/expenses/" {
+				if l := len("pi/expenses"); len(elem) >= l && elem[0:l] == "pi/expenses" {
 					elem = elem[l:]
 				} else {
 					break
 				}
-
-				// Param: "userId"
-				// Leaf parameter
-				args[0] = elem
-				elem = ""
 
 				if len(elem) == 0 {
 					// Leaf node.
@@ -265,17 +250,17 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 						r.name = "DeleteExpense"
 						r.summary = "Deletes an expense"
 						r.operationID = "DeleteExpense"
-						r.pathPattern = "/api/expenses/{userId}"
+						r.pathPattern = "/api/expenses"
 						r.args = args
-						r.count = 1
+						r.count = 0
 						return r, true
 					case "GET":
 						r.name = "GetAllExpenses"
 						r.summary = "get all expenses of client by user Id"
 						r.operationID = "GetAllExpenses"
-						r.pathPattern = "/api/expenses/{userId}"
+						r.pathPattern = "/api/expenses"
 						r.args = args
-						r.count = 1
+						r.count = 0
 						return r, true
 					default:
 						return

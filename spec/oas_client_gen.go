@@ -28,14 +28,14 @@ type Invoker interface {
 	//
 	// Deletes an expense.
 	//
-	// DELETE /api/expenses/{userId}
+	// DELETE /api/expenses
 	DeleteExpense(ctx context.Context, params DeleteExpenseParams) error
 	// GetAllExpenses invokes GetAllExpenses operation.
 	//
 	// Returns all expenses.
 	//
-	// GET /api/expenses/{userId}
-	GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (GetAllExpensesRes, error)
+	// GET /api/expenses
+	GetAllExpenses(ctx context.Context) (GetAllExpensesRes, error)
 	// SignIn invokes signIn operation.
 	//
 	// Validate user.
@@ -104,7 +104,7 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 //
 // Deletes an expense.
 //
-// DELETE /api/expenses/{userId}
+// DELETE /api/expenses
 func (c *Client) DeleteExpense(ctx context.Context, params DeleteExpenseParams) error {
 	_, err := c.sendDeleteExpense(ctx, params)
 	return err
@@ -114,7 +114,7 @@ func (c *Client) sendDeleteExpense(ctx context.Context, params DeleteExpensePara
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("DeleteExpense"),
 		semconv.HTTPMethodKey.String("DELETE"),
-		semconv.HTTPRouteKey.String("/api/expenses/{userId}"),
+		semconv.HTTPRouteKey.String("/api/expenses"),
 	}
 
 	// Run stopwatch.
@@ -146,26 +146,8 @@ func (c *Client) sendDeleteExpense(ctx context.Context, params DeleteExpensePara
 
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/api/expenses/"
-	{
-		// Encode "userId" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "userId",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.IntToString(params.UserId))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
+	var pathParts [1]string
+	pathParts[0] = "/api/expenses"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeQueryParams"
@@ -245,17 +227,17 @@ func (c *Client) sendDeleteExpense(ctx context.Context, params DeleteExpensePara
 //
 // Returns all expenses.
 //
-// GET /api/expenses/{userId}
-func (c *Client) GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (GetAllExpensesRes, error) {
-	res, err := c.sendGetAllExpenses(ctx, params)
+// GET /api/expenses
+func (c *Client) GetAllExpenses(ctx context.Context) (GetAllExpensesRes, error) {
+	res, err := c.sendGetAllExpenses(ctx)
 	return res, err
 }
 
-func (c *Client) sendGetAllExpenses(ctx context.Context, params GetAllExpensesParams) (res GetAllExpensesRes, err error) {
+func (c *Client) sendGetAllExpenses(ctx context.Context) (res GetAllExpensesRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("GetAllExpenses"),
 		semconv.HTTPMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/api/expenses/{userId}"),
+		semconv.HTTPRouteKey.String("/api/expenses"),
 	}
 
 	// Run stopwatch.
@@ -287,26 +269,8 @@ func (c *Client) sendGetAllExpenses(ctx context.Context, params GetAllExpensesPa
 
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/api/expenses/"
-	{
-		// Encode "userId" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "userId",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.IntToString(params.UserId))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
+	var pathParts [1]string
+	pathParts[0] = "/api/expenses"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"

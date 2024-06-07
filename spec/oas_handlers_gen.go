@@ -24,12 +24,12 @@ import (
 //
 // Deletes an expense.
 //
-// DELETE /api/expenses/{userId}
-func (s *Server) handleDeleteExpenseRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+// DELETE /api/expenses
+func (s *Server) handleDeleteExpenseRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("DeleteExpense"),
 		semconv.HTTPMethodKey.String("DELETE"),
-		semconv.HTTPRouteKey.String("/api/expenses/{userId}"),
+		semconv.HTTPRouteKey.String("/api/expenses"),
 	}
 
 	// Start a span for this request.
@@ -133,10 +133,6 @@ func (s *Server) handleDeleteExpenseRequest(args [1]string, argsEscaped bool, w 
 			Body:             nil,
 			Params: middleware.Parameters{
 				{
-					Name: "userId",
-					In:   "path",
-				}: params.UserId,
-				{
 					Name: "expenseID",
 					In:   "query",
 				}: params.ExpenseID,
@@ -184,12 +180,12 @@ func (s *Server) handleDeleteExpenseRequest(args [1]string, argsEscaped bool, w 
 //
 // Returns all expenses.
 //
-// GET /api/expenses/{userId}
-func (s *Server) handleGetAllExpensesRequest(args [1]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
+// GET /api/expenses
+func (s *Server) handleGetAllExpensesRequest(args [0]string, argsEscaped bool, w http.ResponseWriter, r *http.Request) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("GetAllExpenses"),
 		semconv.HTTPMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/api/expenses/{userId}"),
+		semconv.HTTPRouteKey.String("/api/expenses"),
 	}
 
 	// Start a span for this request.
@@ -272,16 +268,6 @@ func (s *Server) handleGetAllExpensesRequest(args [1]string, argsEscaped bool, w
 			return
 		}
 	}
-	params, err := decodeGetAllExpensesParams(args, argsEscaped, r)
-	if err != nil {
-		err = &ogenerrors.DecodeParamsError{
-			OperationContext: opErrContext,
-			Err:              err,
-		}
-		defer recordError("DecodeParams", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
-		return
-	}
 
 	var response GetAllExpensesRes
 	if m := s.cfg.Middleware; m != nil {
@@ -291,18 +277,13 @@ func (s *Server) handleGetAllExpensesRequest(args [1]string, argsEscaped bool, w
 			OperationSummary: "get all expenses of client by user Id",
 			OperationID:      "GetAllExpenses",
 			Body:             nil,
-			Params: middleware.Parameters{
-				{
-					Name: "userId",
-					In:   "path",
-				}: params.UserId,
-			},
-			Raw: r,
+			Params:           middleware.Parameters{},
+			Raw:              r,
 		}
 
 		type (
 			Request  = struct{}
-			Params   = GetAllExpensesParams
+			Params   = struct{}
 			Response = GetAllExpensesRes
 		)
 		response, err = middleware.HookMiddleware[
@@ -312,14 +293,14 @@ func (s *Server) handleGetAllExpensesRequest(args [1]string, argsEscaped bool, w
 		](
 			m,
 			mreq,
-			unpackGetAllExpensesParams,
+			nil,
 			func(ctx context.Context, request Request, params Params) (response Response, err error) {
-				response, err = s.h.GetAllExpenses(ctx, params)
+				response, err = s.h.GetAllExpenses(ctx)
 				return response, err
 			},
 		)
 	} else {
-		response, err = s.h.GetAllExpenses(ctx, params)
+		response, err = s.h.GetAllExpenses(ctx)
 	}
 	if err != nil {
 		defer recordError("Internal", err)

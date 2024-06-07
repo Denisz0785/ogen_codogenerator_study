@@ -17,7 +17,7 @@ var _ Handler = UnimplementedHandler{}
 //
 // Deletes an expense.
 //
-// DELETE /api/expenses/{userId}
+// DELETE /api/expenses
 func (UnimplementedHandler) DeleteExpense(ctx context.Context, params DeleteExpenseParams) error {
 	return ht.ErrNotImplemented
 }
@@ -26,8 +26,8 @@ func (UnimplementedHandler) DeleteExpense(ctx context.Context, params DeleteExpe
 //
 // Returns all expenses.
 //
-// GET /api/expenses/{userId}
-func (UnimplementedHandler) GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (r GetAllExpensesRes, _ error) {
+// GET /api/expenses
+func (UnimplementedHandler) GetAllExpenses(ctx context.Context) (r GetAllExpensesRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

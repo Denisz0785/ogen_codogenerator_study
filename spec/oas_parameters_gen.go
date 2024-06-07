@@ -4,9 +4,6 @@ package api
 
 import (
 	"net/http"
-	"net/url"
-
-	"github.com/go-faster/errors"
 
 	"github.com/ogen-go/ogen/conv"
 	"github.com/ogen-go/ogen/middleware"
@@ -17,20 +14,11 @@ import (
 
 // DeleteExpenseParams is parameters of DeleteExpense operation.
 type DeleteExpenseParams struct {
-	// ID of user.
-	UserId int
 	// Expense id to delete.
 	ExpenseID int
 }
 
 func unpackDeleteExpenseParams(packed middleware.Parameters) (params DeleteExpenseParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "userId",
-			In:   "path",
-		}
-		params.UserId = packed[key].(int)
-	}
 	{
 		key := middleware.ParameterKey{
 			Name: "expenseID",
@@ -41,53 +29,8 @@ func unpackDeleteExpenseParams(packed middleware.Parameters) (params DeleteExpen
 	return params
 }
 
-func decodeDeleteExpenseParams(args [1]string, argsEscaped bool, r *http.Request) (params DeleteExpenseParams, _ error) {
+func decodeDeleteExpenseParams(args [0]string, argsEscaped bool, r *http.Request) (params DeleteExpenseParams, _ error) {
 	q := uri.NewQueryDecoder(r.URL.Query())
-	// Decode path: userId.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "userId",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToInt(val)
-				if err != nil {
-					return err
-				}
-
-				params.UserId = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "userId",
-			In:   "path",
-			Err:  err,
-		}
-	}
 	// Decode query: expenseID.
 	if err := func() error {
 		cfg := uri.QueryParameterDecodingConfig{
@@ -121,72 +64,6 @@ func decodeDeleteExpenseParams(args [1]string, argsEscaped bool, r *http.Request
 		return params, &ogenerrors.DecodeParamError{
 			Name: "expenseID",
 			In:   "query",
-			Err:  err,
-		}
-	}
-	return params, nil
-}
-
-// GetAllExpensesParams is parameters of GetAllExpenses operation.
-type GetAllExpensesParams struct {
-	// ID of user.
-	UserId int
-}
-
-func unpackGetAllExpensesParams(packed middleware.Parameters) (params GetAllExpensesParams) {
-	{
-		key := middleware.ParameterKey{
-			Name: "userId",
-			In:   "path",
-		}
-		params.UserId = packed[key].(int)
-	}
-	return params
-}
-
-func decodeGetAllExpensesParams(args [1]string, argsEscaped bool, r *http.Request) (params GetAllExpensesParams, _ error) {
-	// Decode path: userId.
-	if err := func() error {
-		param := args[0]
-		if argsEscaped {
-			unescaped, err := url.PathUnescape(args[0])
-			if err != nil {
-				return errors.Wrap(err, "unescape path")
-			}
-			param = unescaped
-		}
-		if len(param) > 0 {
-			d := uri.NewPathDecoder(uri.PathDecoderConfig{
-				Param:   "userId",
-				Value:   param,
-				Style:   uri.PathStyleSimple,
-				Explode: false,
-			})
-
-			if err := func() error {
-				val, err := d.DecodeValue()
-				if err != nil {
-					return err
-				}
-
-				c, err := conv.ToInt(val)
-				if err != nil {
-					return err
-				}
-
-				params.UserId = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-		} else {
-			return validate.ErrFieldRequired
-		}
-		return nil
-	}(); err != nil {
-		return params, &ogenerrors.DecodeParamError{
-			Name: "userId",
-			In:   "path",
 			Err:  err,
 		}
 	}

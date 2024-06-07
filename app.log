@@ -81,3 +81,55 @@
 2024/06/07 14:45:53 storage.go:85: storage 155
 2024/06/07 14:47:20 storage.go:85: storage 155
 2024/06/07 14:48:56 storage.go:85: storage 155
+2024/06/07 14:51:35 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 14:51:46 utils.go:54: token signature is invalid: signature is invalid
+2024/06/07 14:51:59 storage.go:85: storage 155
+2024/06/07 14:54:13 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 14:54:19 server.go:3413: http: panic serving [::1]:53674: interface conversion: interface {} is nil, not int
+goroutine 18 [running]:
+net/http.(*conn).serve.func1()
+	/usr/local/go/src/net/http/server.go:1898 +0xbe
+panic({0x890180?, 0xc000286420?})
+	/usr/local/go/src/runtime/panic.go:770 +0x132
+codogenerator/handlers.(*Handler).GetAllExpenses(0xc000036a30, {0x9ea7f8, 0xc0002863f0}, {0x9332fd?})
+	/home/denis/projects/codogenerator/handlers/handlers.go:37 +0x293
+codogenerator/spec.(*Server).handleGetAllExpensesRequest(0xc0001f2dd0, {{0xc000280012?, 0x10?}}, 0x0, {0x9e9410, 0xc0002a6000}, 0xc00011e120)
+	/home/denis/projects/codogenerator/spec/oas_handlers_gen.go:322 +0xc7b
+codogenerator/spec.(*Server).ServeHTTP(0xc0001f2dd0, {0x9e9410, 0xc0002a6000}, 0xc00011e120)
+	/home/denis/projects/codogenerator/spec/oas_router_gen.go:85 +0x2e5
+net/http.serverHandler.ServeHTTP({0xc000110120?}, {0x9e9410?, 0xc0002a6000?}, 0x6?)
+	/usr/local/go/src/net/http/server.go:3137 +0x8e
+net/http.(*conn).serve(0xc000126000, {0x9ea7f8, 0xc000248420})
+	/usr/local/go/src/net/http/server.go:2039 +0x5e8
+created by net/http.(*Server).Serve in goroutine 1
+	/usr/local/go/src/net/http/server.go:3285 +0x4b4
+2024/06/07 15:01:25 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 15:01:30 handlers.go:39: get id 155
+2024/06/07 15:01:30 storage.go:85: storage 155
+2024/06/07 15:04:21 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 15:04:24 handlers.go:39: get id 155
+2024/06/07 15:04:24 storage.go:85: storage 155
+2024/06/07 15:05:25 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 15:06:10 handlers.go:39: get id 155
+2024/06/07 15:06:10 storage.go:85: storage 155
+2024/06/07 15:06:23 handlers.go:39: get id 155
+2024/06/07 15:06:23 storage.go:85: storage 155
+2024/06/07 15:06:46 handlers.go:39: get id 155
+2024/06/07 15:06:46 storage.go:85: storage 155
+2024/06/07 15:13:38 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 15:13:47 handlers.go:39: get id 155
+2024/06/07 15:13:47 storage.go:85: storage 155
+2024/06/07 15:13:48 handlers.go:39: get id 155
+2024/06/07 15:13:48 storage.go:85: storage 155
+2024/06/07 15:13:49 handlers.go:39: get id 155
+2024/06/07 15:13:49 storage.go:85: storage 155
+2024/06/07 15:13:50 handlers.go:39: get id 155
+2024/06/07 15:13:50 storage.go:85: storage 155
+2024/06/07 15:13:53 handlers.go:39: get id 155
+2024/06/07 15:13:53 storage.go:85: storage 155
+2024/06/07 15:14:35 handlers.go:39: get id 155
+2024/06/07 15:14:35 storage.go:85: storage 155
+2024/06/07 15:15:03 handlers.go:39: get id 155
+2024/06/07 15:15:03 storage.go:85: storage 155
+2024/06/07 15:15:59 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 15:16:04 storage.go:85: storage 155

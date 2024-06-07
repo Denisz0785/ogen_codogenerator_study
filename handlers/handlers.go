@@ -19,12 +19,12 @@ func NewHandler(r storage.Repository) *Handler {
 type SecurityServer struct {
 	id int
 }
+type key string
 
 func (s *SecurityServer) HandleApiKeyAuth(ctx context.Context, operationName string, t ogenspec.ApiKeyAuth) (context.Context, error) {
 	id, err := parseToken(t.Token)
 	s.id = id
 
-	type key string
 	var userID key = "userID"
 	if err != nil {
 		return nil, err
@@ -33,9 +33,11 @@ func (s *SecurityServer) HandleApiKeyAuth(ctx context.Context, operationName str
 	return ctx, nil
 }
 
-func (h *Handler) GetAllExpenses(ctx context.Context, params ogenspec.GetAllExpensesParams) (ogenspec.GetAllExpensesRes, error) {
+func (h *Handler) GetAllExpenses(ctx context.Context) (ogenspec.GetAllExpensesRes, error) {
+	var userID key = "userID"
+	id := ctx.Value(userID).(int)
 
-	allExpenses, err := h.repo.GetAllExpenses(ctx, params.UserId)
+	allExpenses, err := h.repo.GetAllExpenses(ctx, id)
 	if err != nil {
 		log.Printf("error get expenses:%s", err.Error())
 		h.NewError(ctx, err)
@@ -45,8 +47,9 @@ func (h *Handler) GetAllExpenses(ctx context.Context, params ogenspec.GetAllExpe
 }
 
 func (h *Handler) DeleteExpense(ctx context.Context, params ogenspec.DeleteExpenseParams) error {
-
-	err := h.repo.DeleteExpense(ctx, params.UserId, params.ExpenseID)
+	var userID key = "userID"
+	id := ctx.Value(userID).(int)
+	err := h.repo.DeleteExpense(ctx, id, params.ExpenseID)
 	if err != nil {
 		log.Printf("error delete expense:%s", err.Error())
 		h.NewError(ctx, err)

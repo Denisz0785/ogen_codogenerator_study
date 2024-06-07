@@ -138,20 +138,13 @@ paths:
             application/json:
               schema: 
                 $ref: '#/components/schemas/ErrorResponse'
-  '/api/expenses/{userId}':
+  '/api/expenses':
     get:
       tags:
       - expenses
       summary: get all expenses of client by user Id
       description: Returns all expenses
       operationId: GetAllExpenses
-      parameters:
-        - name: userId
-          in: path
-          description: ID of user
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: OK
@@ -186,12 +179,6 @@ paths:
       description: ''
       operationId: DeleteExpense
       parameters:
-        - name: userId
-          in: path
-          description: ID of user
-          required: true
-          schema:
-            type: integer
         - name: expenseID
           in: query
           description: expense id to delete

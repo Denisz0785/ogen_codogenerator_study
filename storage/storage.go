@@ -82,7 +82,7 @@ func (r *ExpenseRepo) GetAllExpenses(ctx context.Context, userId int) ([]ogenspe
 	`
 
 	// Execute the query and retrieve the expenses.
-	log.Println("storage", userId)
+
 	rows, err := r.conn.Query(ctx, query, userId)
 	if err != nil {
 		log.Println(err)
