@@ -4,3 +4,11 @@ package api
 type GetAllExpensesRes interface {
 	getAllExpensesRes()
 }
+
+type SignInRes interface {
+	signInRes()
+}
+
+type SignUpRes interface {
+	signUpRes()
+}

@@ -71,3 +71,13 @@
 2024/06/02 12:07:02 storage.go:83: storage 153
 2024/06/02 12:09:46 storage.go:83: storage 153
 2024/06/02 12:09:50 storage.go:83: storage 151
+2024/06/07 11:13:24 storage.go:55: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 12:50:20 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 14:18:27 storage.go:57: postgres://expense_user:zorro@localhost:5432/expenses
+2024/06/07 14:18:52 storage.go:144: error get user no rows in result set
+2024/06/07 14:18:52 utils.go:32: no rows in result set
+2024/06/07 14:18:52 handlers.go:78: no rows in result set
+2024/06/07 14:24:15 storage.go:85: storage 155
+2024/06/07 14:45:53 storage.go:85: storage 155
+2024/06/07 14:47:20 storage.go:85: storage 155
+2024/06/07 14:48:56 storage.go:85: storage 155

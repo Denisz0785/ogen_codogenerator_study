@@ -43,7 +43,7 @@ func main() {
 
 	// Create the service instance
 	// The service is responsible for serving the API endpoints.
-	srv, err := ogenspec.NewServer(handler)
+	srv, err := ogenspec.NewServer(handler, &handlers.SecurityServer{})
 	if err != nil {
 		log.Fatal("error creating the server")
 	}

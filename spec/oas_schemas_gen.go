@@ -23,6 +23,139 @@ func (s *AllExpenses) SetData(val []Expense) {
 
 func (*AllExpenses) getAllExpensesRes() {}
 
+type ApiKeyAuth struct {
+	Token string
+}
+
+// GetToken returns the value of Token.
+func (s *ApiKeyAuth) GetToken() string {
+	return s.Token
+}
+
+// SetToken sets the value of Token.
+func (s *ApiKeyAuth) SetToken(val string) {
+	s.Token = val
+}
+
+// Ref: #/components/schemas/AuthRequest
+type AuthRequest struct {
+	Name string `json:"name"`
+	Pass string `json:"pass"`
+}
+
+// GetName returns the value of Name.
+func (s *AuthRequest) GetName() string {
+	return s.Name
+}
+
+// GetPass returns the value of Pass.
+func (s *AuthRequest) GetPass() string {
+	return s.Pass
+}
+
+// SetName sets the value of Name.
+func (s *AuthRequest) SetName(val string) {
+	s.Name = val
+}
+
+// SetPass sets the value of Pass.
+func (s *AuthRequest) SetPass(val string) {
+	s.Pass = val
+}
+
+// Ref: #/components/schemas/AuthResponse
+type AuthResponse struct {
+	Token OptString `json:"token"`
+}
+
+// GetToken returns the value of Token.
+func (s *AuthResponse) GetToken() OptString {
+	return s.Token
+}
+
+// SetToken sets the value of Token.
+func (s *AuthResponse) SetToken(val OptString) {
+	s.Token = val
+}
+
+func (*AuthResponse) signInRes() {}
+
+// Ref: #/components/schemas/CreateUserRequest
+type CreateUserRequest struct {
+	Name    string `json:"name"`
+	Surname string `json:"surname"`
+	Login   string `json:"login"`
+	Pass    string `json:"pass"`
+	Email   string `json:"email"`
+}
+
+// GetName returns the value of Name.
+func (s *CreateUserRequest) GetName() string {
+	return s.Name
+}
+
+// GetSurname returns the value of Surname.
+func (s *CreateUserRequest) GetSurname() string {
+	return s.Surname
+}
+
+// GetLogin returns the value of Login.
+func (s *CreateUserRequest) GetLogin() string {
+	return s.Login
+}
+
+// GetPass returns the value of Pass.
+func (s *CreateUserRequest) GetPass() string {
+	return s.Pass
+}
+
+// GetEmail returns the value of Email.
+func (s *CreateUserRequest) GetEmail() string {
+	return s.Email
+}
+
+// SetName sets the value of Name.
+func (s *CreateUserRequest) SetName(val string) {
+	s.Name = val
+}
+
+// SetSurname sets the value of Surname.
+func (s *CreateUserRequest) SetSurname(val string) {
+	s.Surname = val
+}
+
+// SetLogin sets the value of Login.
+func (s *CreateUserRequest) SetLogin(val string) {
+	s.Login = val
+}
+
+// SetPass sets the value of Pass.
+func (s *CreateUserRequest) SetPass(val string) {
+	s.Pass = val
+}
+
+// SetEmail sets the value of Email.
+func (s *CreateUserRequest) SetEmail(val string) {
+	s.Email = val
+}
+
+// Ref: #/components/schemas/CreateUserResponse
+type CreateUserResponse struct {
+	ID int `json:"id"`
+}
+
+// GetID returns the value of ID.
+func (s *CreateUserResponse) GetID() int {
+	return s.ID
+}
+
+// SetID sets the value of ID.
+func (s *CreateUserResponse) SetID(val int) {
+	s.ID = val
+}
+
+func (*CreateUserResponse) signUpRes() {}
+
 // DeleteExpenseOK is response for DeleteExpense operation.
 type DeleteExpenseOK struct{}
 
@@ -40,6 +173,9 @@ func (s *ErrorResponse) GetMessage() OptString {
 func (s *ErrorResponse) SetMessage(val OptString) {
 	s.Message = val
 }
+
+func (*ErrorResponse) signInRes() {}
+func (*ErrorResponse) signUpRes() {}
 
 // ErrorResponseStatusCode wraps ErrorResponse with StatusCode.
 type ErrorResponseStatusCode struct {

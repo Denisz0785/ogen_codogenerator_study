@@ -20,23 +20,37 @@ type Handler interface {
 	//
 	// GET /api/expenses/{userId}
 	GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (GetAllExpensesRes, error)
+	// SignIn implements signIn operation.
+	//
+	// Validate user.
+	//
+	// POST /auth/sign-in
+	SignIn(ctx context.Context, req *AuthRequest) (SignInRes, error)
+	// SignUp implements signUp operation.
+	//
+	// Creates a new user.
+	//
+	// POST /auth/sign-up
+	SignUp(ctx context.Context, req *CreateUserRequest) (SignUpRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and
 // calls Handler to handle requests.
 type Server struct {
-	h Handler
+	h   Handler
+	sec SecurityHandler
 	baseServer
 }
 
 // NewServer creates new Server.
-func NewServer(h Handler, opts ...ServerOption) (*Server, error) {
+func NewServer(h Handler, sec SecurityHandler, opts ...ServerOption) (*Server, error) {
 	s, err := newServerConfig(opts...).baseServer()
 	if err != nil {
 		return nil, err
 	}
 	return &Server{
 		h:          h,
+		sec:        sec,
 		baseServer: s,
 	}, nil
 }
