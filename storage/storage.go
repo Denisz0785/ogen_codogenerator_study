@@ -9,6 +9,8 @@ import (
 	"os"
 	"time"
 
+	"codogenerator/model"
+
 	"github.com/jackc/pgx/v5"
 )
 
@@ -28,8 +30,8 @@ type Repository interface {
 	// DeleteFile(ctx context.Context, pathFile string, expenseId int) error
 	// GetExpense(ctx context.Context, userID, expenseID int) (*dto.Expense, error)
 	// UpdateExpense(ctx context.Context, expenseID int, newExpense *dto.Expense) error
-	// CreateUser(ctx context.Context, user *dto.User) (int, error)
-	// GetUser(userName, hashPassword string) (*dto.User, error)
+	CreateUser(ctx context.Context, user *ogenspec.CreateUserRequest) (int, error)
+	GetUser(userName, hashPassword string) (*model.User, error)
 }
 
 // Expense represents an expense in the database.
@@ -80,7 +82,7 @@ func (r *ExpenseRepo) GetAllExpenses(ctx context.Context, userId int) ([]ogenspe
 	`
 
 	// Execute the query and retrieve the expenses.
-	log.Println("storage", userId)
+
 	rows, err := r.conn.Query(ctx, query, userId)
 	if err != nil {
 		log.Println(err)
@@ -120,4 +122,27 @@ func (r *ExpenseRepo) DeleteExpense(ctx context.Context, userID, expenseID int) 
 		return err
 	}
 	return nil
+}
+
+func (r *ExpenseRepo) CreateUser(ctx context.Context, user *ogenspec.CreateUserRequest) (int, error) {
+	var userId int
+
+	query := fmt.Sprintf("INSERT INTO %s (name,surname,login,pass,email) values ($1,$2,$3,$4,$5) RETURNING id", "users")
+	err := r.conn.QueryRow(ctx, query, user.Name, user.Surname, user.Login, user.Pass, user.Email).Scan(&userId)
+	if err != nil {
+		log.Printf("error create user:%s", err.Error())
+		return -1, err
+	}
+	return userId, nil
+}
+
+func (r *ExpenseRepo) GetUser(userName, hashPassword string) (*model.User, error) {
+	var user model.User
+	query := fmt.Sprintf("SELECT id FROM %s WHERE name=$1 and pass=$2", "users")
+	err := r.conn.QueryRow(context.Background(), query, userName, hashPassword).Scan(&user.Id)
+	if err != nil {
+		log.Println("error get user", err.Error())
+		return nil, err
+	}
+	return &user, nil
 }

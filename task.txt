@@ -1,0 +1,17 @@
+Добавь ручку авторизации и сделай авторизацию в существующей ручке так чтобы разработчик добавляющий
+ новую ручку мог максимально просто указать должна ли ручка быть доступна только авторизованным пользователям
+
+ - name: userId
+          in: path
+          description: ID of user
+          required: true
+          schema:
+            type: integer
+
+parameters:
+        - name: userId
+          in: path
+          description: ID of user
+          required: true
+          schema:
+            type: integer

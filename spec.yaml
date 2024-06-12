@@ -6,7 +6,53 @@ servers:
   - url: https://api.server.test/v1
 
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    CreateUserRequest:
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        login:
+          type: string
+        pass:
+          type: string
+        email:
+          type: string
+      required:
+        - name
+        - surname
+        - login
+        - pass
+        - email
+      type: object
+    CreateUserResponse:
+      properties:
+        id:
+          type: integer
+      required:
+      - id
+      type: object
+    AuthRequest:
+      properties:
+        name:
+          type: string
+        pass:
+          type: string
+      required:
+        - name
+        - pass
+      type: object
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
     AllExpenses:
       properties:
        data:
@@ -40,20 +86,65 @@ components:
       type: object
 
 paths:
-  '/api/expenses/{userId}':
+  /auth/sign-up:
+    post:
+      tags:
+      - registration
+      summary: Creates a new user
+      description: ''
+      operationId: signUp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/sign-in:
+    post:
+      tags:
+      - authentification              
+      summary: validate user
+      description: ''
+      operationId: signIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/ErrorResponse'
+  '/api/expenses':
     get:
       tags:
       - expenses
       summary: get all expenses of client by user Id
       description: Returns all expenses
       operationId: GetAllExpenses
-      parameters:
-        - name: userId
-          in: path
-          description: ID of user
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: OK
@@ -79,6 +170,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - ApiKeyAuth: []
     delete:
       tags:
       - expenses
@@ -86,12 +179,6 @@ paths:
       description: ''
       operationId: DeleteExpense
       parameters:
-        - name: userId
-          in: path
-          description: ID of user
-          required: true
-          schema:
-            type: integer
         - name: expenseID
           in: query
           description: expense id to delete
@@ -101,6 +188,8 @@ paths:
       responses:
         '200':
           description: successful operation
+      security:
+        - ApiKeyAuth: []
        
       
       

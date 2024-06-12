@@ -17,6 +17,7 @@ import (
 
 	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
+	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/otelogen"
 	"github.com/ogen-go/ogen/uri"
 )
@@ -27,19 +28,32 @@ type Invoker interface {
 	//
 	// Deletes an expense.
 	//
-	// DELETE /api/expenses/{userId}
+	// DELETE /api/expenses
 	DeleteExpense(ctx context.Context, params DeleteExpenseParams) error
 	// GetAllExpenses invokes GetAllExpenses operation.
 	//
 	// Returns all expenses.
 	//
-	// GET /api/expenses/{userId}
-	GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (GetAllExpensesRes, error)
+	// GET /api/expenses
+	GetAllExpenses(ctx context.Context) (GetAllExpensesRes, error)
+	// SignIn invokes signIn operation.
+	//
+	// Validate user.
+	//
+	// POST /auth/sign-in
+	SignIn(ctx context.Context, request *AuthRequest) (SignInRes, error)
+	// SignUp invokes signUp operation.
+	//
+	// Creates a new user.
+	//
+	// POST /auth/sign-up
+	SignUp(ctx context.Context, request *CreateUserRequest) (SignUpRes, error)
 }
 
 // Client implements OAS client.
 type Client struct {
 	serverURL *url.URL
+	sec       SecuritySource
 	baseClient
 }
 
@@ -53,7 +67,7 @@ func trimTrailingSlashes(u *url.URL) {
 }
 
 // NewClient initializes new Client defined by OAS.
-func NewClient(serverURL string, opts ...ClientOption) (*Client, error) {
+func NewClient(serverURL string, sec SecuritySource, opts ...ClientOption) (*Client, error) {
 	u, err := url.Parse(serverURL)
 	if err != nil {
 		return nil, err
@@ -66,6 +80,7 @@ func NewClient(serverURL string, opts ...ClientOption) (*Client, error) {
 	}
 	return &Client{
 		serverURL:  u,
+		sec:        sec,
 		baseClient: c,
 	}, nil
 }
@@ -89,7 +104,7 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 //
 // Deletes an expense.
 //
-// DELETE /api/expenses/{userId}
+// DELETE /api/expenses
 func (c *Client) DeleteExpense(ctx context.Context, params DeleteExpenseParams) error {
 	_, err := c.sendDeleteExpense(ctx, params)
 	return err
@@ -99,7 +114,7 @@ func (c *Client) sendDeleteExpense(ctx context.Context, params DeleteExpensePara
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("DeleteExpense"),
 		semconv.HTTPMethodKey.String("DELETE"),
-		semconv.HTTPRouteKey.String("/api/expenses/{userId}"),
+		semconv.HTTPRouteKey.String("/api/expenses"),
 	}
 
 	// Run stopwatch.
@@ -131,26 +146,8 @@ func (c *Client) sendDeleteExpense(ctx context.Context, params DeleteExpensePara
 
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/api/expenses/"
-	{
-		// Encode "userId" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "userId",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.IntToString(params.UserId))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
+	var pathParts [1]string
+	pathParts[0] = "/api/expenses"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeQueryParams"
@@ -177,6 +174,39 @@ func (c *Client) sendDeleteExpense(ctx context.Context, params DeleteExpensePara
 		return res, errors.Wrap(err, "create request")
 	}
 
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:ApiKeyAuth"
+			switch err := c.securityApiKeyAuth(ctx, "DeleteExpense", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"ApiKeyAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
+	}
+
 	stage = "SendRequest"
 	resp, err := c.cfg.Client.Do(r)
 	if err != nil {
@@ -197,17 +227,17 @@ func (c *Client) sendDeleteExpense(ctx context.Context, params DeleteExpensePara
 //
 // Returns all expenses.
 //
-// GET /api/expenses/{userId}
-func (c *Client) GetAllExpenses(ctx context.Context, params GetAllExpensesParams) (GetAllExpensesRes, error) {
-	res, err := c.sendGetAllExpenses(ctx, params)
+// GET /api/expenses
+func (c *Client) GetAllExpenses(ctx context.Context) (GetAllExpensesRes, error) {
+	res, err := c.sendGetAllExpenses(ctx)
 	return res, err
 }
 
-func (c *Client) sendGetAllExpenses(ctx context.Context, params GetAllExpensesParams) (res GetAllExpensesRes, err error) {
+func (c *Client) sendGetAllExpenses(ctx context.Context) (res GetAllExpensesRes, err error) {
 	otelAttrs := []attribute.KeyValue{
 		otelogen.OperationID("GetAllExpenses"),
 		semconv.HTTPMethodKey.String("GET"),
-		semconv.HTTPRouteKey.String("/api/expenses/{userId}"),
+		semconv.HTTPRouteKey.String("/api/expenses"),
 	}
 
 	// Run stopwatch.
@@ -239,32 +269,47 @@ func (c *Client) sendGetAllExpenses(ctx context.Context, params GetAllExpensesPa
 
 	stage = "BuildURL"
 	u := uri.Clone(c.requestURL(ctx))
-	var pathParts [2]string
-	pathParts[0] = "/api/expenses/"
-	{
-		// Encode "userId" parameter.
-		e := uri.NewPathEncoder(uri.PathEncoderConfig{
-			Param:   "userId",
-			Style:   uri.PathStyleSimple,
-			Explode: false,
-		})
-		if err := func() error {
-			return e.EncodeValue(conv.IntToString(params.UserId))
-		}(); err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		encoded, err := e.Result()
-		if err != nil {
-			return res, errors.Wrap(err, "encode path")
-		}
-		pathParts[1] = encoded
-	}
+	var pathParts [1]string
+	pathParts[0] = "/api/expenses"
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
 	r, err := ht.NewRequest(ctx, "GET", u)
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
+	}
+
+	{
+		type bitset = [1]uint8
+		var satisfied bitset
+		{
+			stage = "Security:ApiKeyAuth"
+			switch err := c.securityApiKeyAuth(ctx, "GetAllExpenses", r); {
+			case err == nil: // if NO error
+				satisfied[0] |= 1 << 0
+			case errors.Is(err, ogenerrors.ErrSkipClientSecurity):
+				// Skip this security.
+			default:
+				return res, errors.Wrap(err, "security \"ApiKeyAuth\"")
+			}
+		}
+
+		if ok := func() bool {
+		nextRequirement:
+			for _, requirement := range []bitset{
+				{0b00000001},
+			} {
+				for i, mask := range requirement {
+					if satisfied[i]&mask != mask {
+						continue nextRequirement
+					}
+				}
+				return true
+			}
+			return false
+		}(); !ok {
+			return res, ogenerrors.ErrSecurityRequirementIsNotSatisfied
+		}
 	}
 
 	stage = "SendRequest"
@@ -276,6 +321,156 @@ func (c *Client) sendGetAllExpenses(ctx context.Context, params GetAllExpensesPa
 
 	stage = "DecodeResponse"
 	result, err := decodeGetAllExpensesResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// SignIn invokes signIn operation.
+//
+// Validate user.
+//
+// POST /auth/sign-in
+func (c *Client) SignIn(ctx context.Context, request *AuthRequest) (SignInRes, error) {
+	res, err := c.sendSignIn(ctx, request)
+	return res, err
+}
+
+func (c *Client) sendSignIn(ctx context.Context, request *AuthRequest) (res SignInRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("signIn"),
+		semconv.HTTPMethodKey.String("POST"),
+		semconv.HTTPRouteKey.String("/auth/sign-in"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(float64(elapsedDuration)/float64(time.Millisecond)), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, "SignIn",
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/auth/sign-in"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeSignInRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeSignInResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// SignUp invokes signUp operation.
+//
+// Creates a new user.
+//
+// POST /auth/sign-up
+func (c *Client) SignUp(ctx context.Context, request *CreateUserRequest) (SignUpRes, error) {
+	res, err := c.sendSignUp(ctx, request)
+	return res, err
+}
+
+func (c *Client) sendSignUp(ctx context.Context, request *CreateUserRequest) (res SignUpRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("signUp"),
+		semconv.HTTPMethodKey.String("POST"),
+		semconv.HTTPRouteKey.String("/auth/sign-up"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(float64(elapsedDuration)/float64(time.Millisecond)), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, "SignUp",
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/auth/sign-up"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeSignUpRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeSignUpResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}
